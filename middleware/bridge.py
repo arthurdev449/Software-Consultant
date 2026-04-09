@@ -1,45 +1,63 @@
 import ctypes
 import os
 import json
+import sys
 
-# PSEUDO CODE: Load the shared library
-# lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend/memory_engine.so'))
-# memory_lib = ctypes.CDLL(lib_path)
+# Load the shared library depending on platform
+lib_name = 'memory_engine.dll' if sys.platform == 'win32' else 'memory_engine.so'
+lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend', lib_name))
 
-# PSEUDO CODE: Define argument and return types for C functions
-# memory_lib.write_to_buffer.argtypes = [ctypes.c_char_p]
-# memory_lib.write_to_buffer.restype = ctypes.c_int
+try:
+    memory_lib = ctypes.CDLL(lib_path)
+    
+    # Define argument and return types for C functions
+    memory_lib.write_to_buffer.argtypes = [ctypes.c_char_p]
+    memory_lib.write_to_buffer.restype = ctypes.c_int
+
+    memory_lib.lock_project_brief.argtypes = [ctypes.c_char_p]
+    
+    memory_lib.get_memory_stats.restype = ctypes.c_char_p
+    memory_lib.read_project_brief.restype = ctypes.c_char_p
+except OSError:
+    print(f"Warning: Could not load {lib_name}. Ensure it is compiled and placed in backend/")
+    memory_lib = None
 
 def init_memory():
     """Initializes the C memory engine."""
-    # PSEUDO CODE: Call memory_lib.init_memory_engine()
-    print("Bridge: Memory Initialized")
+    if memory_lib:
+        memory_lib.init_memory_engine()
+        print("Bridge: Memory Initialized")
+    else:
+        print("Bridge: memory_lib not loaded.")
 
 def write_message(message):
     """Writes a message to the C circular buffer."""
-    # PSEUDO CODE:
-    # encoded_message = message.encode('utf-8')
-    # return memory_lib.write_to_buffer(encoded_message)
-    print(f"Bridge: Writing to C Buffer -> {message[:20]}...")
-    return 0
+    if memory_lib:
+        encoded_message = message.encode('utf-8')
+        return memory_lib.write_to_buffer(encoded_message)
+    return -1
 
 def lock_brief(summary):
     """Locks the project brief in C memory."""
-    # PSEUDO CODE:
-    # encoded_summary = summary.encode('utf-8')
-    # memory_lib.lock_project_brief(encoded_summary)
-    print("Bridge: Project Brief Locked")
+    if memory_lib:
+        encoded_summary = summary.encode('utf-8')
+        memory_lib.lock_project_brief(encoded_summary)
+        print("Bridge: Project Brief Locked")
 
 def get_stats():
     """Fetches memory usage stats from C."""
-    # PSEUDO CODE:
-    # c_stats = memory_lib.get_memory_stats()
-    # return json.loads(c_stats.decode('utf-8'))
+    if memory_lib:
+        c_stats = memory_lib.get_memory_stats()
+        if c_stats:
+            stats_str = c_stats.decode('utf-8')
+            try:
+                return json.loads(stats_str)
+            except json.JSONDecodeError:
+                pass
     
-    # Mock return for frontend visualization
+    # Fallback return
     return {
-        "buffer_usage": 35,
+        "buffer_usage": 0,
         "brief_locked": False,
-        "total_allocated": 1048576,
-        "active_segment": "0x7F..."
+        "total_allocated": 0
     }

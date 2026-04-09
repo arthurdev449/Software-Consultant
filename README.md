@@ -1,38 +1,71 @@
-# Software Consultant
+# 🧠 Software Consultant OS
 
-A Hybrid C/Python Multi-Agent Decision Support System.
+A high-performance, multi-agent AI decision support system designed to act as an expert software consultant. It orchestrates multiple LLM personas through a strict pipeline to gather requirements, draft structural project briefs, and vigorously debate technical risks.
 
-## Overview
-Software Consultant is an advanced LLM orchestration platform that moves beyond simple chatbots. It uses a custom C-based memory engine for context management and a Python Flask middleware for orchestration.
+Built as an exploration into **Foreign Function Interfaces (FFI)**, **Systems Programming**, and **State-Machine Orchestration**.
 
-## Architecture
+## 🚀 Features
+* **Multi-Agent Pipeline**: Specialized LLM personas (Interviewer, Architect, Risk Manager, Judge) acting in an orchestrated linear state-machine.
+* **Native C-Core Memory**: A custom memory engine built in raw C managing a highly optimized 1MB Circular Buffer—achieving $O(1)$ memory state permanence without utilizing an external database.
+* **C/Python Interoperability**: Bridged seamlessly via `ctypes` for advanced unmanaged/managed memory handoffs.
+* **Live UI Dashboard**: Vanilla frontend with DOM manipulations tracking the C-engine memory byte limits and rendering parsed Markdown in real time.
 
-### 1. Backend Core (The Vault) - C
-- **Role**: Handles memory management using a Circular Buffer and a Read-Only Project Brief.
-- **Tech**: C (Pseudo-code implementation).
+---
 
-### 2. Middleware (The Orchestrator) - Python
-- **Role**: Manages agents (Interviewer, Architect, Council, Judge) and bridges the web frontend with the C core.
-- **Tech**: Python, Flask, Ctypes.
+## 🏗️ Architecture Stack
 
-### 3. Frontend (The Visualization)
-- **Role**: Provides a rich chat interface and a Real-Time Memory Monitor.
-- **Tech**: HTML, CSS (Dark Mode), JavaScript.
+* **Backend Engine**: `C` (Dynamic heap allocation, Pointers, Circular Buffers)
+* **Middleware Orchestrator**: `Python 3` + `Flask` + `ctypes`
+* **Agent Infrastructure**: `Google Generative AI` (Gemini SDK)
+* **Frontend Client**: Vanilla HTML / CSS / JS + `marked.js`
 
-## Setup & Running
+### Design Decisions & Trade-offs
+**Why build a custom C-Memory engine instead of using SQLite?**
+> While standard local deployments usually rely on embedded SQLite databases or Redis instances for state tracking, I specifically engineered a custom C-driven Circular Buffer to deeply explore Foreign Function Interfaces (FFI), stateless context window limits natively, and manual heap management. This allows the backend to hold an active conversation infinitely by continuously overwriting the oldest buffer data wrapped around absolute character limits.
 
-1. **Prerequisites**: Python 3.x, GCC (optional, for compiling C).
-2. **Install Dependencies**:
+---
+
+## ⚙️ The Consultation Pipeline
+
+1. **Discovery (The Interviewer)**: Socratic phase where the agent gathers raw project constraints and avoids proposing solutions.
+2. **Synthesis (The Architect)**: Once discovery concludes, the entire UI is locked. The Architect reads the history and synthesizes a strict `Project Brief` (The single source of truth locked into the C-Vault).
+3. **Validation (The Council)**: Peer-review stage where a "Risk Manager" attempts to aggressively tear down the architecture, citing vulnerabilities or complexity.
+4. **Verdict (The Judge)**: The final step that absorbs the debate history and outputs actionable execution directives.
+
+---
+
+## 🛠️ Installation & Setup
+
+1. **Clone the repository:**
    ```bash
-   sudo apt install python3-pip  # If pip is missing
-   pip3 install flask
+   git clone https://github.com/yourusername/Software-Consultant.git
+   cd Software-Consultant
    ```
-3. **Run the Application**:
-   ```bash
-   cd middleware
-   python3 app.py
-   ```
-4. **Access**: Open `http://localhost:5000` in your browser.
 
-## License
-MIT License.
+2. **Compile the C-Engine:**
+   * **Linux/WSL**: `gcc -shared -o backend/memory_engine.so -fPIC backend/memory_engine.c`
+   * **Windows**: Compile as a `.dll` depending on your environment compiler (e.g., MinGW).
+
+3. **Setup the Python Environment:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install flask google-generativeai
+   ```
+
+4. **API Configuration:**
+   Create a `secrets.json` file in the root directory and add your Gemini API Key:
+   ```json
+   {
+       "Google_generative_ai_api_for_Gemini": "YOUR_API_KEY_HERE"
+   }
+   ```
+
+5. **Run the Orchestrator:**
+   ```bash
+   python middleware/app.py
+   ```
+   *Navigate to `http://127.0.0.1:5000` in your browser.*
+
+---
+*Created as a 5th Semester Computer Science academic and portfolio project.*

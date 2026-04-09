@@ -39,7 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const content = document.createElement('div');
         content.className = 'content';
-        content.textContent = text;
+        
+        if (typeof marked !== 'undefined') {
+            content.innerHTML = marked.parse(text);
+        } else {
+            content.textContent = text;
+        }
         
         msgDiv.appendChild(avatar);
         msgDiv.appendChild(content);
@@ -55,6 +60,21 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.value = '';
         addLog(`Input received: "${text.substring(0, 15)}..."`);
 
+        // Temporary Loading DOM creation
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message';
+        loadingDiv.innerHTML = `
+            <div class="avatar">age</div>
+            <div class="content">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>`;
+        chatHistory.appendChild(loadingDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
@@ -62,10 +82,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ message: text })
             });
             const data = await response.json();
+            
+            // Cleanup Loading Frame
+            if(chatHistory.contains(loadingDiv)) {
+                chatHistory.removeChild(loadingDiv);
+            }
+            
+            if (data.stage) {
+                document.getElementById('agent-name').textContent = data.stage;
+            }
+            
             appendMessage('Agent', data.response);
             addLog(`Response generated`);
         } catch (error) {
             console.error('Error:', error);
+            // Cleanup Loading Frame
+            if(chatHistory.contains(loadingDiv)) {
+                chatHistory.removeChild(loadingDiv);
+            }
             addLog(`Error: ${error.message}`);
         }
     }
