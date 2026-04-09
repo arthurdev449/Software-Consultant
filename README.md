@@ -38,7 +38,7 @@ Built as an exploration into **Foreign Function Interfaces (FFI)**, **Systems Pr
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/Software-Consultant.git
+   git clone git@github.com:arthurdev449/Software-Consultant.git
    cd Software-Consultant
    ```
 
